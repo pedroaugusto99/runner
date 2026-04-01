@@ -1,4 +1,4 @@
-# Sistema Runner - Trabalho Prático
+# Sistema Runner - Trabalho Prático - Grupo de Pedro e Cláudio
 
 ## 1. Visão geral
 
