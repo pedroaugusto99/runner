@@ -8,8 +8,6 @@
 
 
 
-Goiânia, 2026
-
 ## Estado Atual do Projeto
 Atualmente, o projeto encontra-se no final da **Fase de Fundação (Sprint 1)**. A estrutura base do código e os esqueletos dos executáveis foram estabelecidos e validados localmente.
 
@@ -42,3 +40,5 @@ go run ./cmd/assinatura version
 
 # Para executar o stub do simulador
 go run ./cmd/simulador
+```
+Goiânia, 2026
