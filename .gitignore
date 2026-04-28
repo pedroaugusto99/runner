@@ -1,0 +1,32 @@
+### IntelliJ IDEA ###
+.idea/
+*.iml
+
+### Build (Java/Maven/Gradle) ###
+target/
+build/
+out/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+### Go ###
+/dist/
+/bin/
+
+### Logs e Sistema ###
+*.log
+logs/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+### Sistema Runner & Segurança ###
+.hubsaude/
+*.sig
+*.pem
