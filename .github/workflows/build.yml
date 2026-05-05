@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Testes Multiplataforma
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Verificar código
+        run: go vet ./...
+
+      - name: Executar testes
+        run: go test ./...
+
+  build:
+    name: Cross-Compilation
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Gerar Binários
+        run: |
+          mkdir -p dist
+          # Build para Linux
+          GOOS=linux GOARCH=amd64 go build -o dist/assinatura-linux-amd64 ./cmd/assinatura
+          # Build para Windows
+          GOOS=windows GOARCH=amd64 go build -o dist/assinatura-windows-amd64.exe ./cmd/assinatura
+          # Build para macOS
+          GOOS=darwin GOARCH=amd64 go build -o dist/assinatura-macos-amd64 ./cmd/assinatura
+
+      - name: Publicar Artefatos
+        uses: actions/upload-artifact@v4
+        with:
+          name: assinatura-binaries
+          path: dist/*
