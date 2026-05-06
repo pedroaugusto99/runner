@@ -19,8 +19,8 @@ Atualmente, o projeto encontra-se no final da **Fase de Fundação (Sprint 1)**.
 - [x] **Versionamento Semântico**: Preparação da variável global `version` para injeção via pipeline de CI/CD.
 
 ### O que falta fazer (Próximos Passos)
-- [ ] **Automação (US-05.1)**: Configuração do GitHub Actions para Cross-Compilation (Windows, Linux, macOS).
-- [ ] **Segurança (US-05.3)**: Implementação da assinatura de artefatos com Cosign.
+- [X] **Automação (US-05.1)**: Configuração do GitHub Actions para Cross-Compilation (Windows, Linux, macOS).
+- [X] **Segurança (US-05.3)**: Implementação da assinatura de artefatos com Cosign.
 - [ ] **Projeto Java (Sprint 2)**: Desenvolvimento do `assinador.jar` dentro da pasta `assinador/`.
 - [ ] **Integração (Sprint 3)**: Lógica de download automático do JDK e do assinador.
 
