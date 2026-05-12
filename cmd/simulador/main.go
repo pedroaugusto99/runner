@@ -8,5 +8,5 @@ import "github.com/pedroaugusto99/runner/cmd/simulador/cmd"
 var version = "dev"
 
 func main() {
-    cmd.Execute()
+	cmd.Execute(version)
 }
