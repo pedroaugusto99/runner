@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: assinador
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    br.ufg.inf.assinador: DEBUG
