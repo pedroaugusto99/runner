@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         version = "0.1.0",
         description = "Motor de Assinatura FHIR para HubSaude",
-        subcommands = { SignCommand.class })
+        subcommands = { SignCommand.class, ValidateCommand.class })
 public class AssinadorCommand implements Callable<Integer> {
 
     @Override
