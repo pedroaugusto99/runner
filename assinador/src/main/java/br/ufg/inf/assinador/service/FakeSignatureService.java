@@ -13,7 +13,6 @@ public class FakeSignatureService implements SignatureService {
             throw new IllegalArgumentException("O ficheiro de entrada não foi encontrado ou é inválido: " + inputFilePath);
         }
 
-        // Retorna o Mock estruturado (US-02.1)
         return """
                {
                  "resourceType": "Signature",
@@ -31,7 +30,11 @@ public class FakeSignatureService implements SignatureService {
 
     @Override
     public boolean validate(String signatureFilePath) {
-        // Deixaremos para o ValidateCommand depois
-        return true;
+        File file = new File(signatureFilePath);
+        if (!file.exists() || !file.isFile()) {
+            throw new IllegalArgumentException("O ficheiro de assinatura não foi encontrado: " + signatureFilePath);
+        }
+
+        return signatureFilePath.toLowerCase().endsWith(".json");
     }
 }
