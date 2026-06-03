@@ -44,12 +44,15 @@ jobs:
       - name: Gerar Binários
         run: |
           mkdir -p dist
+          VERSION=${GITHUB_REF_NAME}
+          COMMIT=${GITHUB_SHA::7}
+          LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
           # Build para Linux
-          GOOS=linux GOARCH=amd64 go build -o dist/assinatura-linux-amd64 ./cmd/assinatura
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-linux-amd64 ./cmd/assinatura
           # Build para Windows
-          GOOS=windows GOARCH=amd64 go build -o dist/assinatura-windows-amd64.exe ./cmd/assinatura
+          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-windows-amd64.exe ./cmd/assinatura
           # Build para macOS
-          GOOS=darwin GOARCH=amd64 go build -o dist/assinatura-macos-amd64 ./cmd/assinatura
+          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-macos-amd64 ./cmd/assinatura
 
       - name: Publicar Artefatos
         uses: actions/upload-artifact@v4

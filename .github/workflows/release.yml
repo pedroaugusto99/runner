@@ -31,9 +31,11 @@ jobs:
         run: |
           mkdir -p dist
           VERSION=${{ github.ref_name }}
-          GOOS=linux GOARCH=amd64 go build -o dist/assinatura-$VERSION-linux-amd64 ./cmd/assinatura
-          GOOS=windows GOARCH=amd64 go build -o dist/assinatura-$VERSION-windows-amd64.exe ./cmd/assinatura
-          GOOS=darwin GOARCH=amd64 go build -o dist/assinatura-$VERSION-macos-amd64 ./cmd/assinatura
+          COMMIT=${GITHUB_SHA::7}
+          LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-linux-amd64 ./cmd/assinatura
+          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-windows-amd64.exe ./cmd/assinatura
+          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-macos-amd64 ./cmd/assinatura
           cd dist
           sha256sum * > checksums.txt
           cd ..
