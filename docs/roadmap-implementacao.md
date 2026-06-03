@@ -6,8 +6,8 @@ Este documento organiza a evolução do Sistema Runner em incrementos pequenos, 
 
 ## Premissas
 
-- O estado atual do projeto ainda é inicial, com CLI base em Go e workflows de build/release já criados.
-- O componente `assinador.jar` ainda precisa ser implementado.
+- O estado atual do projeto ainda é inicial, com CLI base em Go, projeto Java Maven e workflows de build/release já criados.
+- O componente `assinador.jar` já possui comandos locais iniciais, mas ainda precisa cumprir o contrato de integração, validar parâmetros com rigor e expor modo HTTP.
 - O sistema deve evoluir de forma incremental, preservando a possibilidade de validação frequente.
 - Sempre que possível, cada incremento deve gerar evidências objetivas: código, testes, documentação ou automação.
 
@@ -15,8 +15,8 @@ Este documento organiza a evolução do Sistema Runner em incrementos pequenos, 
 
 | Prioridade | Tema | Motivo |
 | --- | --- | --- |
-| P0 | Contratos e comportamento esperado | Evita retrabalho entre Go e Java. |
-| P1 | `assinador.jar` com simulação determinística | Destrava integração e testes. |
+| P0 | Contratos e comportamento esperado | Evita retrabalho entre Go e Java e corrige divergências como `verify` vs. `validate`. |
+| P1 | `assinador.jar` com simulação determinística e saída JSON | Destrava integração e testes. |
 | P1 | CLI `assinatura` com fluxo local mínimo | Permite primeira entrega funcional fim a fim. |
 | P2 | Modo servidor HTTP | Melhora desempenho e cobre parte central da US-01. |
 | P2 | Gestão do `simulador.jar` | Expande escopo funcional do Runner. |
@@ -54,6 +54,7 @@ Eliminar ambiguidade antes de implementar os componentes principais.
 
 **Critério de pronto**
 - O time consegue implementar Go e Java de forma desacoplada, sem decisões pendentes sobre o contrato principal.
+- As decisões não óbvias estão registradas em ADR curto: porta padrão, nomes de comandos, códigos de erro e estratégia de descoberta de servidor.
 
 ### Onda 2 — Implementar núcleo do `assinador.jar`
 
@@ -69,15 +70,15 @@ Entregar o primeiro comportamento funcional do lado Java com simulação consist
 - Códigos de saída consistentes para sucesso e erro.
 
 **Sugestão de tarefas**
-1. Criar estrutura do projeto Java em `assinador/`.
-2. Implementar parser de argumentos.
-3. Criar camada de validação de parâmetros.
-4. Implementar respostas simuladas de assinatura e validação.
-5. Padronizar saída estruturada em JSON.
-6. Cobrir cenários de erro básicos com testes.
+1. Alinhar o comando Java atual `validate` com o contrato final `verify` ou atualizar o contrato.
+2. Criar camada de validação de parâmetros baseada nas referências FHIR.
+3. Implementar respostas simuladas de assinatura e validação em JSON.
+4. Padronizar códigos de saída e erros estruturados.
+5. Cobrir cenários de sucesso e erro com testes unitários e testes de CLI do JAR.
 
 **Critério de pronto**
 - É possível executar `sign` e `verify` via terminal e obter resposta previsível para cenários válidos e inválidos.
+- A saída de sucesso vai para `stdout`, diagnósticos vão para `stderr`, e os códigos de saída distinguem erro do usuário de erro do sistema.
 
 ### Onda 3 — Integrar CLI `assinatura` ao modo local
 
@@ -94,10 +95,10 @@ Entregar a primeira integração fim a fim entre CLI Go e `assinador.jar`.
 
 **Sugestão de tarefas**
 1. Criar comandos Cobra para `sign` e `verify`.
-2. Implementar pacote `internal/invoker` para execução de processo externo.
+2. Implementar pacote `internal/assinador` para execução local do `assinador.jar`.
 3. Traduzir flags do CLI para parâmetros do JAR.
 4. Mapear erros técnicos para erros de uso.
-5. Adicionar testes de fumaça do CLI.
+5. Adicionar testes de contrato com subprocesso real.
 
 **Critério de pronto**
 - Um usuário consegue disparar assinatura e validação pelo binário Go sem invocar Java manualmente.
@@ -119,7 +120,7 @@ Cobrir o fluxo preferencial da US-01 com menor custo de inicialização por requ
 **Sugestão de tarefas**
 1. Adicionar modo `server` ao `assinador.jar`.
 2. Implementar endpoints definidos no contrato.
-3. Criar cliente HTTP em `internal/invoker`.
+3. Criar cliente HTTP em `internal/assinador`.
 4. Implementar `assinatura server start|status|stop`.
 5. Adicionar testes de integração do modo HTTP.
 

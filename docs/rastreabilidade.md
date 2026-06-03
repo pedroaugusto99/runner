@@ -11,61 +11,78 @@ Este documento relaciona as histórias de usuário definidas em `docs/especifica
 - **Parcial**: parte dos critérios de aceitação já é atendida.
 - **Concluído**: todos os critérios de aceitação estão cobertos por implementação e evidências.
 
+## Estado observado em 2026-06-02
+
+Validações executadas localmente:
+
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go test ./...`
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go vet ./...`
+- `mvn -Dmaven.repo.local=/tmp/runner-m2 test`, em `assinador/`
+
+Resultado: os comandos passaram. A evidência Java ainda é limitada porque há apenas teste de carga de contexto; os testes de contrato com o JAR real ainda precisam ser adicionados.
+
 ## Visão geral
 
 | História | Título | Status atual | Observação resumida |
 | --- | --- | --- | --- |
-| US-01 | Invocar `assinador.jar` via CLI | Em preparação | CLI base existe, mas sem comandos de assinatura/validação e sem integração com Java. |
-| US-02 | Simular assinatura digital com validação de parâmetros | Não iniciado | Projeto `assinador/` existe, porém sem implementação funcional observável do JAR. |
+| US-01 | Invocar `assinador.jar` via CLI | Parcial | CLI possui `sign` e `validate` em modo local, com execução do `assinador.jar`; modo HTTP e gestão de servidor ainda não existem. |
+| US-02 | Simular assinatura digital com validação de parâmetros | Parcial | O Java já possui comandos locais `sign` e `validate` com simulação simples, mas sem contrato JSON, validação FHIR rigorosa, HTTP ou PKCS#11. |
 | US-03 | Gerenciar ciclo de vida do Simulador do HubSaúde | Em preparação | Binário `simulador` existe como stub, sem start/stop/status nem download dinâmico. |
-| US-04 | Provisionar JDK automaticamente | Não iniciado | Há diretório `internal/jdk/`, mas ainda sem código. |
+| US-04 | Provisionar JDK automaticamente | Não iniciado | Há diretório `internal/jdk/`, mas ainda sem implementação. |
 | US-05 | Disponibilizar binários multiplataforma | Parcial | Há workflows de build/release, mas ainda com cobertura e artefatos divergentes da especificação. |
 
 ## Detalhamento por história
 
 ### US-01 — Invocar `assinador.jar` via CLI
 
-**Status:** Em preparação
+**Status:** Parcial
 
 **Evidências atuais**
 - Existe o binário `cmd/assinatura/` com CLI baseada em Cobra.
-- Existe o comando `version` em `cmd/assinatura/cmd/version.go`.
+- Existe o comando `version` em `cmd/assinatura/cmd/version.go`, com suporte a versão e SHA curto por `-ldflags`.
+- Existem comandos `sign` e `validate` em `cmd/assinatura/cmd/`.
+- Existe integração local com o JAR em `internal/assinador/`, preservando argumentos, `stdout`, `stderr`, timeout e código de saída.
 - Existe descrição de propósito no comando raiz em `cmd/assinatura/cmd/root.go`.
+- Existe pacote interno para integração com o `assinador.jar` (`internal/assinador/`) e pacotes reservados para JDK e releases (`internal/jdk/`, `internal/release/`).
 
 **Lacunas frente aos critérios de aceitação**
-- Não há comandos para criar assinatura ou validar assinatura.
-- Não há integração com `assinador.jar` por linha de comando.
+- Não há teste de contrato executando o JAR real a partir do CLI Go.
 - Não há integração por HTTP com uma instância em modo servidor.
 - Não há detecção de instância já em execução.
 - Não há suporte a porta padrão/configurável, parada remota ou parada programada.
-- Não há formatação de saída de operações de assinatura/validação.
+- A formatação de saída ainda depende do contrato atual do `assinador.jar`.
 
 **Próximos passos sugeridos**
-1. Definir a interface do CLI (`sign`, `verify`, `server start`, `server stop`, `server status`).
-2. Formalizar contrato de invocação local e HTTP do `assinador.jar`.
-3. Implementar um pacote `internal/invoker` com abstração por modo (`local` e `http`).
-4. Criar testes de aceitação cobrindo os fluxos principais e de erro.
+1. Fechar a interface pública do CLI (`sign`, `verify`, `server start`, `server stop`, `server status`) em issue ligada à US-01.
+2. Ajustar o contrato de `docs/integracao-assinador.md` para coincidir com o Java atual ou alterar o Java para cumprir o contrato.
+3. Criar testes de contrato que executem o JAR real via subprocesso.
+4. Implementar modo HTTP após o `assinador.jar` expor endpoints de saúde, assinatura e validação.
 
 ### US-02 — Simular assinatura digital com validação de parâmetros
 
-**Status:** Não iniciado
+**Status:** Parcial
 
 **Evidências atuais**
-- Existe a pasta `assinador/`, indicando reserva de espaço para o componente Java.
-- A especificação já define claramente o comportamento esperado de simulação e validação rigorosa.
+- Existe projeto Maven em `assinador/` com Spring Boot e picocli.
+- Existem comandos locais `sign` e `validate`.
+- `FakeSignatureService` simula criação de assinatura e validação baseada em arquivo `.json`.
+- `mvn test` passa localmente com dependências resolvidas.
 
 **Lacunas frente aos critérios de aceitação**
-- Não foi localizada implementação funcional do `assinador.jar`.
-- Não há validação de parâmetros conforme as referências FHIR.
-- Não há simulação de criação/validação com respostas pré-construídas.
-- Não há mensagens de erro estruturadas.
+- A operação de validação no Java se chama `validate`, enquanto o contrato de integração usa `verify`.
+- Não há saída JSON padronizada conforme `docs/integracao-assinador.md`.
+- A validação de parâmetros ainda é mínima e baseada em existência/extensão de arquivo, não nas referências FHIR.
+- Não há mensagens de erro estruturadas com código, campo e motivo.
+- Não há separação clara entre resultado em `stdout` e diagnóstico em `stderr` em todos os casos.
+- Não há testes funcionais para `sign`, `validate` e cenários negativos.
 - Não há evidência de suporte a PKCS#11, ainda que simulado ou encapsulado.
 
 **Próximos passos sugeridos**
-1. Definir contrato de entrada/saída do `assinador.jar` antes da implementação.
-2. Criar tabela de validações obrigatórias baseada nas referências da seção 10 da especificação.
-3. Implementar respostas simuladas determinísticas para facilitar testes de integração.
-4. Padronizar códigos de erro e mensagens legíveis para CLI e HTTP.
+1. Decidir e registrar se o comando final será `verify` ou `validate`; depois alinhar código, docs e testes.
+2. Implementar saída JSON padronizada para sucesso e erro.
+3. Extrair uma tabela mínima de validações FHIR e transformar cada regra em teste.
+4. Adicionar testes unitários para `FakeSignatureService` e testes de CLI para `sign`/`verify`.
+5. Criar simulação explícita de PKCS#11 no contrato antes de implementar integração real ou fake.
 
 ### US-03 — Gerenciar ciclo de vida do Simulador do HubSaúde
 
@@ -84,10 +101,11 @@ Este documento relaciona as histórias de usuário definidas em `docs/especifica
 - Não há evidência de gerenciamento de processo em execução.
 
 **Próximos passos sugeridos**
-1. Definir comandos `start`, `stop` e `status` no CLI.
-2. Criar pacote responsável por resolver e baixar artefatos do simulador.
-3. Adicionar verificação de portas e de processo local.
+1. Definir comandos `start`, `stop` e `status` em issue ligada à US-03.
+2. Criar pacote responsável por resolver e baixar artefatos do simulador via GitHub Releases.
+3. Adicionar verificação de portas, health check e readiness antes de declarar sucesso.
 4. Padronizar diretório de cache local para binários e metadados.
+5. Testar porta ocupada, simulador ausente e reuso do artefato já baixado.
 
 ### US-04 — Provisionar JDK automaticamente
 
@@ -107,6 +125,7 @@ Este documento relaciona as histórias de usuário definidas em `docs/especifica
 2. Escolher a origem oficial dos downloads por plataforma.
 3. Implementar resolução de ambiente local antes de cair para download.
 4. Padronizar cache e política de reaproveitamento do JDK já baixado.
+5. Adicionar erro amigável quando o JDK não puder ser obtido.
 
 ### US-05 — Disponibilizar binários multiplataforma
 
@@ -125,10 +144,21 @@ Este documento relaciona as histórias de usuário definidas em `docs/especifica
 - Não há testes automatizados no repositório para sustentar a etapa `go test ./...` com cobertura útil.
 
 **Próximos passos sugeridos**
-1. Ajustar a convenção de nomes dos artefatos publicados.
-2. Expandir a release para incluir também o binário `simulador` quando aplicável.
-3. Garantir publicação explícita dos arquivos `.sig` e `.pem` por artefato.
-4. Registrar no repositório o procedimento de verificação dos artefatos assinados.
+1. Incluir build e testes Java no CI, além de `go test`.
+2. Ajustar a convenção de nomes dos artefatos publicados.
+3. Expandir a release para incluir também o binário `simulador` quando aplicável.
+4. Garantir publicação explícita dos arquivos `.sig` e `.pem` por artefato.
+5. Registrar no repositório o procedimento de verificação dos artefatos assinados.
+
+## Próximos passos priorizados
+
+1. **P0: alinhar contrato CLI/JAR.** Resolver a divergência `verify` vs. `validate`, definir formato JSON final, códigos de erro, exit codes e porta padrão. Registrar decisões não óbvias como ADR curto.
+2. **P0: criar testes de contrato.** Executar o JAR real via subprocesso para sucesso e erro de `sign`/`verify`, preservando argumentos com espaços e acentos.
+3. **P1: consolidar o `assinador.jar` local.** Trocar mensagens livres por respostas estruturadas, fortalecer validações FHIR mínimas e separar `stdout` de `stderr`.
+4. **P1: integrar `assinatura` ao modo local.** Implementar `assinatura sign` e `assinatura verify` chamando o JAR, com falha clara para JAR/JDK ausente.
+5. **P2: adicionar modo HTTP.** Implementar health check real, start idempotente, status, stop e timeout/conexão recusada/resposta malformada.
+6. **P2: colocar Java no CI.** O pipeline deve rodar Go e Maven em Linux e Windows para comprovar portabilidade real.
+7. **P3: evoluir simulador e JDK.** Implementar ciclo de vida do `simulador.jar`, download condicional e provisionamento automático do JDK.
 
 ## Observações gerais
 
