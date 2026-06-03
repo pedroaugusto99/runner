@@ -13,7 +13,7 @@ func TestVersionCommand(t *testing.T) {
 		t.Fatalf("falha ao executar comando: %v", err)
 	}
 
-	expected := "dev"
+	expected := "dev (commit unknown)"
 	if !strings.Contains(string(out), expected) {
 		t.Errorf("esperava conter %q, obteve %q", expected, string(out))
 	}
