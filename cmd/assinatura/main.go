@@ -5,8 +5,11 @@ package main
 
 import "github.com/pedroaugusto99/runner/cmd/assinatura/cmd"
 
-var version = "dev"
+var (
+	version = "dev"
+	commit  = "unknown"
+)
 
 func main() {
-    cmd.Execute()
+	cmd.Execute(version, commit)
 }

@@ -2,17 +2,24 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Exibe a versão atual da aplicação",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("assinatura v0.1.0-dev")
-	},
+func newVersionCommand(cfg *cliConfig) *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Exibe a versão atual da aplicação",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Fprintf(cmd.OutOrStdout(), "assinatura %s\n", formatVersion(cfg))
+		},
+	}
 }
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
+func formatVersion(cfg *cliConfig) string {
+	if cfg.commit == "" {
+		return cfg.version
+	}
+	return fmt.Sprintf("%s (commit %s)", cfg.version, cfg.commit)
 }
