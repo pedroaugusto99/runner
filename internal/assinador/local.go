@@ -8,9 +8,18 @@ import (
 	"io/fs"
 	"os/exec"
 	"time"
+
+	"github.com/pedroaugusto99/runner/internal/java"
 )
 
 func RunLocal(ctx context.Context, req LocalRequest) (LocalResult, error) {
+	javaPath, provErr := java.EnsureJRE()
+	if provErr != nil {
+		fmt.Printf("Aviso do Provisionador: %v\n", provErr)
+	} else {
+		req.JavaBin = javaPath
+	}
+
 	if req.JavaBin == "" {
 		req.JavaBin = "java"
 	}
