@@ -15,8 +15,10 @@ Este documento relaciona as histórias de usuário definidas na [especificacao u
 
 Validações executadas localmente:
 
-- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go test ./...`
-- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go vet ./...`
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go test ./...`, em `assinatura/`
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go vet ./...`, em `assinatura/`
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go test ./...`, em `simulador/`
+- `env GOCACHE=/tmp/runner-go-build-cache GOMODCACHE=/tmp/runner-go-mod-cache go vet ./...`, em `simulador/`
 - `mvn -Dmaven.repo.local=/tmp/runner-m2 test`, em `assinador/`
 
 Resultado: os comandos passaram. A evidência Java ainda é limitada porque há apenas teste de carga de contexto; os testes de contrato com o JAR real ainda precisam ser adicionados.
@@ -28,7 +30,7 @@ Resultado: os comandos passaram. A evidência Java ainda é limitada porque há 
 | US-01 | Invocar `assinador.jar` via CLI | Parcial | CLI possui `sign` e `validate` em modo local, com execução do `assinador.jar`; modo HTTP e gestão de servidor ainda não existem. |
 | US-02 | Simular assinatura digital com validação de parâmetros | Parcial | O Java já possui comandos locais `sign` e `validate` com simulação simples, mas sem contrato JSON, validação FHIR rigorosa, HTTP ou PKCS#11. |
 | US-03 | Gerenciar ciclo de vida do Simulador do HubSaúde | Em preparação | Binário `simulador` existe como stub, sem start/stop/status nem download dinâmico. |
-| US-04 | Provisionar JDK automaticamente | Não iniciado | Há diretório `internal/jdk/`, mas ainda sem implementação. |
+| US-04 | Provisionar JDK automaticamente | Não iniciado | Há diretório `assinatura/internal/jdk/`, mas ainda sem implementação. |
 | US-05 | Disponibilizar binários multiplataforma | Parcial | Há workflows de build/release, mas ainda com cobertura e artefatos divergentes da especificação. |
 
 ## Detalhamento por história
@@ -38,12 +40,12 @@ Resultado: os comandos passaram. A evidência Java ainda é limitada porque há 
 **Status:** Parcial
 
 **Evidências atuais**
-- Existe o binário `cmd/assinatura/` com CLI baseada em Cobra.
-- Existe o comando `version` em `cmd/assinatura/cmd/version.go`, com suporte a versão e SHA curto por `-ldflags`.
-- Existem comandos `sign` e `validate` em `cmd/assinatura/cmd/`.
-- Existe integração local com o JAR em `internal/assinador/`, preservando argumentos, `stdout`, `stderr`, timeout e código de saída.
-- Existe descrição de propósito no comando raiz em `cmd/assinatura/cmd/root.go`.
-- Existe pacote interno para integração com o `assinador.jar` (`internal/assinador/`) e pacotes reservados para JDK e releases (`internal/jdk/`, `internal/release/`).
+- Existe o componente `assinatura/` com CLI baseada em Cobra.
+- Existe o comando `version` em `assinatura/cmd/version.go`, com suporte a versão e SHA curto por `-ldflags`.
+- Existem comandos `sign` e `validate` em `assinatura/cmd/`.
+- Existe integração local com o JAR em `assinatura/internal/assinador/`, preservando argumentos, `stdout`, `stderr`, timeout e código de saída.
+- Existe descrição de propósito no comando raiz em `assinatura/cmd/root.go`.
+- Existe pacote interno para integração com o `assinador.jar` (`assinatura/internal/assinador/`) e pacotes reservados para JDK e releases (`assinatura/internal/jdk/`, `assinatura/internal/release/`).
 
 **Lacunas frente aos critérios de aceitação**
 - Não há teste de contrato executando o JAR real a partir do CLI Go.
@@ -89,7 +91,7 @@ Resultado: os comandos passaram. A evidência Java ainda é limitada porque há 
 **Status:** Em preparação
 
 **Evidências atuais**
-- Existe o binário `cmd/simulador/`.
+- Existe o componente `simulador/`.
 - O comando raiz do simulador já descreve a intenção de gerenciar o ciclo de vida.
 - O arquivo `README.md` cita o simulador como stub usado para testes iniciais.
 
@@ -112,7 +114,7 @@ Resultado: os comandos passaram. A evidência Java ainda é limitada porque há 
 **Status:** Não iniciado
 
 **Evidências atuais**
-- Existe o diretório `internal/jdk/`, indicando a intenção de encapsular a funcionalidade.
+- Existe o diretório `assinatura/internal/jdk/`, indicando a intenção de encapsular a funcionalidade.
 
 **Lacunas frente aos critérios de aceitação**
 - Não há detecção da presença do JDK nem validação de versão.
@@ -141,7 +143,7 @@ Resultado: os comandos passaram. A evidência Java ainda é limitada porque há 
 - Os nomes dos artefatos atuais não seguem integralmente o formato exemplificado na especificação.
 - A especificação exige publicação de `<artefato>`, `<artefato>.sig` e `<artefato>.pem` para cada binário; o workflow atual precisa evidenciar esse empacotamento final.
 - A especificação menciona formatos como `.AppImage` e `.dmg`, enquanto o workflow atual gera binários crus.
-- Não há testes automatizados no repositório para sustentar a etapa `go test ./...` com cobertura útil.
+- Não há testes automatizados suficientes no repositório para sustentar as etapas `go test ./...` dos módulos Go com cobertura útil.
 
 **Próximos passos sugeridos**
 1. Incluir build e testes Java no CI, além de `go test`.
