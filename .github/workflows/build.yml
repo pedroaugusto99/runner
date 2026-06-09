@@ -21,12 +21,25 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          cache-dependency-path: |
+            assinatura/go.sum
+            simulador/go.sum
 
-      - name: Verificar código
+      - name: Verificar assinatura
         run: go vet ./...
+        working-directory: assinatura
 
-      - name: Executar testes
+      - name: Testar assinatura
         run: go test ./...
+        working-directory: assinatura
+
+      - name: Verificar simulador
+        run: go vet ./...
+        working-directory: simulador
+
+      - name: Testar simulador
+        run: go test ./...
+        working-directory: simulador
 
   build:
     name: Cross-Compilation
@@ -40,19 +53,26 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          cache-dependency-path: |
+            assinatura/go.sum
+            simulador/go.sum
 
       - name: Gerar Binários
         run: |
           mkdir -p dist
           VERSION=${GITHUB_REF_NAME}
           COMMIT=${GITHUB_SHA::7}
-          LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
+          ASSINATURA_LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
+          SIMULADOR_LDFLAGS="-X main.version=$VERSION"
           # Build para Linux
-          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-linux-amd64 ./cmd/assinatura
+          GOOS=linux GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-linux-amd64 .
+          GOOS=linux GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-linux-amd64 .
           # Build para Windows
-          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-windows-amd64.exe ./cmd/assinatura
+          GOOS=windows GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-windows-amd64.exe .
+          GOOS=windows GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-windows-amd64.exe .
           # Build para macOS
-          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-macos-amd64 ./cmd/assinatura
+          GOOS=darwin GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-macos-amd64 .
+          GOOS=darwin GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-macos-amd64 .
 
       - name: Publicar Artefatos
         uses: actions/upload-artifact@v4

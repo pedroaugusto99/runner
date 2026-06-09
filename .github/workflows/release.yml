@@ -23,6 +23,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          cache-dependency-path: |
+            assinatura/go.sum
+            simulador/go.sum
 
       - name: Instalar Cosign
         uses: sigstore/cosign-installer@v3.5.0
@@ -32,10 +35,14 @@ jobs:
           mkdir -p dist
           VERSION=${{ github.ref_name }}
           COMMIT=${GITHUB_SHA::7}
-          LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
-          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-linux-amd64 ./cmd/assinatura
-          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-windows-amd64.exe ./cmd/assinatura
-          GOOS=darwin GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/assinatura-$VERSION-macos-amd64 ./cmd/assinatura
+          ASSINATURA_LDFLAGS="-X main.version=$VERSION -X main.commit=$COMMIT"
+          SIMULADOR_LDFLAGS="-X main.version=$VERSION"
+          GOOS=linux GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-$VERSION-linux-amd64 .
+          GOOS=windows GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-$VERSION-windows-amd64.exe .
+          GOOS=darwin GOARCH=amd64 go build -C assinatura -ldflags "$ASSINATURA_LDFLAGS" -o ../dist/assinatura-$VERSION-macos-amd64 .
+          GOOS=linux GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-$VERSION-linux-amd64 .
+          GOOS=windows GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-$VERSION-windows-amd64.exe .
+          GOOS=darwin GOARCH=amd64 go build -C simulador -ldflags "$SIMULADOR_LDFLAGS" -o ../dist/simulador-$VERSION-macos-amd64 .
           cd dist
           sha256sum * > checksums.txt
           cd ..
@@ -45,6 +52,9 @@ jobs:
           cosign sign-blob --yes dist/assinatura-${{ github.ref_name }}-linux-amd64
           cosign sign-blob --yes dist/assinatura-${{ github.ref_name }}-windows-amd64.exe
           cosign sign-blob --yes dist/assinatura-${{ github.ref_name }}-macos-amd64
+          cosign sign-blob --yes dist/simulador-${{ github.ref_name }}-linux-amd64
+          cosign sign-blob --yes dist/simulador-${{ github.ref_name }}-windows-amd64.exe
+          cosign sign-blob --yes dist/simulador-${{ github.ref_name }}-macos-amd64
           cosign sign-blob --yes dist/checksums.txt
 
       - name: Criar GitHub Release
