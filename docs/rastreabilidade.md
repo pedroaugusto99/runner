@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Este documento relaciona as histórias de usuário definidas em `docs/especificacao.md` com o estado atual do repositório, indicando evidências objetivas, lacunas e próximos passos. O objetivo é facilitar acompanhamento, planejamento e demonstração de aderência aos requisitos sem alterar a implementação atual.
+Este documento relaciona as histórias de usuário definidas na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md) com o estado atual do repositório, indicando evidências objetivas, lacunas e próximos passos. O objetivo é facilitar acompanhamento, planejamento e demonstração de aderência aos requisitos sem alterar a implementação atual.
 
 ## Legenda de status
 
