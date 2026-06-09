@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Este checklist operacionaliza os requisitos de distribuição descritos em `docs/especificacao.md`, com foco em consistência, rastreabilidade e segurança dos artefatos publicados.
+Este checklist operacionaliza os requisitos de distribuição descritos na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md), com foco em consistência, rastreabilidade e segurança dos artefatos publicados.
 
 ## Quando usar
 
