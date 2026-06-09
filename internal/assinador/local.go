@@ -13,16 +13,16 @@ import (
 )
 
 func RunLocal(ctx context.Context, req LocalRequest) (LocalResult, error) {
-	javaPath, provErr := java.EnsureJRE()
-	if provErr != nil {
-		fmt.Printf("Aviso do Provisionador: %v\n", provErr)
-	} else {
-		req.JavaBin = javaPath
+	if req.JavaBin == "" {
+		javaPath, provErr := java.EnsureJRE()
+		if provErr != nil {
+			fmt.Printf("Aviso do Provisionador: %v\n", provErr)
+			req.JavaBin = "java"
+		} else {
+			req.JavaBin = javaPath
+		}
 	}
 
-	if req.JavaBin == "" {
-		req.JavaBin = "java"
-	}
 	if req.Timeout <= 0 {
 		req.Timeout = 30 * time.Second
 	}
