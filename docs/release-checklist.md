@@ -19,8 +19,10 @@ Use este checklist sempre que uma versão do projeto for preparada para publica�
 
 ## 2. Testes e validação
 
-- [ ] Executar `go vet ./...`.
-- [ ] Executar `go test ./...`.
+- [ ] Executar `go vet ./...` em `assinatura/`.
+- [ ] Executar `go test ./...` em `assinatura/`.
+- [ ] Executar `go vet ./...` em `simulador/`.
+- [ ] Executar `go test ./...` em `simulador/`.
 - [ ] Validar execução básica dos binários CLI previstos para a release.
 - [ ] Confirmar que a versão exibida pelos binários corresponde à tag da release.
 - [ ] Registrar limitações conhecidas que não bloqueiam a publicação.

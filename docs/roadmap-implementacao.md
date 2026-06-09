@@ -95,7 +95,7 @@ Entregar a primeira integração fim a fim entre CLI Go e `assinador.jar`.
 
 **Sugestão de tarefas**
 1. Criar comandos Cobra para `sign` e `verify`.
-2. Implementar pacote `internal/assinador` para execução local do `assinador.jar`.
+2. Implementar pacote `assinatura/internal/assinador` para execução local do `assinador.jar`.
 3. Traduzir flags do CLI para parâmetros do JAR.
 4. Mapear erros técnicos para erros de uso.
 5. Adicionar testes de contrato com subprocesso real.
@@ -120,7 +120,7 @@ Cobrir o fluxo preferencial da US-01 com menor custo de inicialização por requ
 **Sugestão de tarefas**
 1. Adicionar modo `server` ao `assinador.jar`.
 2. Implementar endpoints definidos no contrato.
-3. Criar cliente HTTP em `internal/assinador`.
+3. Criar cliente HTTP em `assinatura/internal/assinador`.
 4. Implementar `assinatura server start|status|stop`.
 5. Adicionar testes de integração do modo HTTP.
 
@@ -141,7 +141,7 @@ Entregar a base da US-03 com lifecycle management controlado pelo Runner.
 - Armazenamento local padronizado do binário e metadados.
 
 **Sugestão de tarefas**
-1. Criar pacote de download/resolução em `internal/release`.
+1. Criar pacote de download/resolução em `assinatura/internal/release`.
 2. Criar camada de processo local para start/stop/status.
 3. Implementar cache local do artefato.
 4. Adicionar validação de portas e mensagens de erro adequadas.
@@ -163,7 +163,7 @@ Reduzir dependência de instalação manual de Java no ambiente do usuário.
 
 **Sugestão de tarefas**
 1. Definir versão mínima suportada.
-2. Implementar detector de JDK local em `internal/jdk`.
+2. Implementar detector de JDK local em `assinatura/internal/jdk`.
 3. Implementar resolução de origem/download por sistema operacional.
 4. Integrar o caminho do JDK ao invocador local.
 5. Cobrir cenários de ausência e reaproveitamento.
