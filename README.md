@@ -29,33 +29,38 @@ Atualmente, o projeto está entre a **Fase de Fundação** e a primeira entrega 
 - [ ] **JDK e simulador**: Adicionar download automático do JDK e ciclo de vida do `simulador.jar`.
 
 ## Estrutura do Repositório
-O projeto segue o layout padrão para aplicações Go com múltiplos binários:
-- `cmd/assinatura`: Código fonte do binário principal de assinatura.
-- `cmd/simulador`: Código fonte do binário de simulação.
-- `internal/`: Pacotes privados compartilhados entre os binários.
+O projeto separa os componentes principais em diretórios próprios:
+- `assinatura/`: Código fonte do CLI de assinatura.
 - `assinador/`: Código fonte do componente Java (Maven).
+- `simulador/`: Código fonte do CLI de simulação.
+- `docs/`: Documentação específica desta implementação.
 
 ## Como executar localmente
 Certifique-se de ter o **Go 1.25+** instalado.
 
 ```bash
 # Para ver a versão da assinatura
-go run ./cmd/assinatura version
+cd assinatura
+go run . version
 
 # Para assinar em modo local depois de gerar assinador/target/assinador.jar
-go run ./cmd/assinatura sign --input entrada.json --output assinatura.json --local
+go run . sign --input entrada.json --output assinatura.json --local
 
 # Para validar em modo local
-go run ./cmd/assinatura validate --signature assinatura.json --local
+go run . validate --signature assinatura.json --local
+
+# Para testar o CLI assinatura
+go test ./...
 
 # Para executar o stub do simulador
-go run ./cmd/simulador
+cd ../simulador
+go run .
 
-# Para testar os binários Go
+# Para testar o CLI simulador
 go test ./...
 
 # Para testar o assinador Java
-cd assinador
+cd ../assinador
 mvn test
 ```
 Goiânia, 2026

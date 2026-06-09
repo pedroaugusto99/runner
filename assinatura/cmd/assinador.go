@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pedroaugusto99/runner/internal/assinador"
+	"github.com/pedroaugusto99/runner/assinatura/internal/assinador"
 	"github.com/spf13/cobra"
 )
 

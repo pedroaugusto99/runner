@@ -1,4 +1,4 @@
-module github.com/pedroaugusto99/runner
+module github.com/pedroaugusto99/runner/assinatura
 
 go 1.25.0
 

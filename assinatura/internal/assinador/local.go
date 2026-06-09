@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pedroaugusto99/runner/internal/java"
+	"github.com/pedroaugusto99/runner/assinatura/internal/java"
 )
 
 func RunLocal(ctx context.Context, req LocalRequest) (LocalResult, error) {
