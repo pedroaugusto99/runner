@@ -23,17 +23,16 @@ func TestVersionCommandUsesInjectedVersion(t *testing.T) {
 	}
 }
 
-func TestSignWithoutLocalReportsHTTPNotAvailable(t *testing.T) {
+func TestSignWithoutLocalReportsFallback(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	root := newRootCommand("dev", "unknown", &stdout, &stderr)
-	root.SetArgs([]string{"sign", "--input", "entrada.json", "--output", "assinatura.json"})
+	root.SetArgs([]string{"sign", "--input", "entrada.json", "--output", "assinatura.json", "--port", "9999"})
 
-	err := root.Execute()
-	if err == nil {
-		t.Fatal("esperava erro quando modo HTTP é solicitado")
-	}
-	if !strings.Contains(err.Error(), "modo HTTP ainda não está disponível") {
-		t.Fatalf("erro inesperado: %v", err)
+	_ = root.Execute()
+
+	got := stdout.String()
+	if !strings.Contains(got, "Servidor inativo") && !strings.Contains(got, "A processar operação no Modo Local") {
+		t.Errorf("Esperava que o sistema tentasse fallback para o modo local. Saída: %q", got)
 	}
 }

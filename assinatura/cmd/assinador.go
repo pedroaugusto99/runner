@@ -3,12 +3,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/pedroaugusto99/runner/assinatura/internal/assinador"
 	"github.com/spf13/cobra"
 )
 
 func runAssinador(cmd *cobra.Command, req assinador.LocalRequest) error {
+	os.Setenv("SPRING_MAIN_WEB_APPLICATION_TYPE", "none")
+
+	defer os.Unsetenv("SPRING_MAIN_WEB_APPLICATION_TYPE")
+
 	result, err := assinador.RunLocal(cmd.Context(), req)
 	if result.Stdout != "" {
 		fmt.Fprint(cmd.OutOrStdout(), result.Stdout)

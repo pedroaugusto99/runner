@@ -50,6 +50,8 @@ Exemplos:
 	rootCmd.AddCommand(newVersionCommand(cfg))
 	rootCmd.AddCommand(newSignCommand(cfg))
 	rootCmd.AddCommand(newValidateCommand(cfg))
+	rootCmd.AddCommand(newStartCommand(cfg))
+	rootCmd.AddCommand(newStopCommand(cfg))
 
 	return rootCmd
 }
