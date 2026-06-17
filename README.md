@@ -26,12 +26,13 @@ O projeto evoluiu da Fase de Fundação para uma entrega funcional robusta. O Si
 - [x] [US-01.8 — Interromper execução do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-018--interromper-execu%C3%A7%C3%A3o-do-assinadorjar)
 - [x] [US-01.9 — Agendar interrupção do assinador.jar por inatividade](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-019--agendar-interrup%C3%A7%C3%A3o-do-assinadorjar-por-inatividade)
 - [x] [US-02.4 — Endpoints HTTP do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-024--endpoints-http-do-assinadorjar)
-
+- [ ] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11) - **Em andamento**
 
 ### O que falta fazer (Próximos Passos)
-- [x] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11)
-- [ ] **Contrato CLI/JAR**: Alinhar comandos, JSON de saída, códigos de erro e nomenclatura `verify`/`validate`.
-- [ ] **JDK e simulador**: Adicionar download automático do JDK e ciclo de vida do `simulador.jar`.
+- [x] **Validação de parâmetros (US-02.2/02.3)**: validação rigorosa no `assinador.jar` (autoridade única), com erros estruturados (`campo`/`motivo`) e resultado determinístico de validação.
+- [x] **Saída do contrato CLI/JAR (US-01.4)**: envelope JSON em `stdout`, exibição legível no CLI e códigos de saída coerentes — ver [ADR 0001](docs/adr/0001-contrato-cli-jar.md).
+- [ ] **Nomenclatura `verify`/`validate`**: unificar o nome do comando (mantido `validate` por ora).
+- [ ] **JDK e simulador**: download automático do JDK e ciclo de vida do `simulador.jar`.
 
 ## Estrutura do Repositório
 O projeto separa os componentes principais em diretórios próprios:
@@ -40,32 +41,67 @@ O projeto separa os componentes principais em diretórios próprios:
 - `simulador/`: Código fonte do CLI de simulação.
 - `docs/`: Documentação específica desta implementação.
 
-## Como executar localmente
-Certifique-se de ter o Go 1.25+ e Maven instalados.
+## Como gerar os executáveis
+Pré-requisitos: Go 1.25+, JDK 21 e Maven.
 
 ```bash
-# 1. Iniciar servidor em background
+# 1. Empacotar o assinador.jar (artefato único, com Main-Class)
+cd assinador
+mvn package            # gera assinador/target/assinador.jar
+
+# 2. Compilar o CLI de assinatura
+cd ../assinatura
+go build -o assinatura .
+```
+
+O CLI localiza o `assinador.jar` automaticamente (procurando em
+`assinador/target/assinador.jar` a partir do diretório atual ou do binário);
+também aceita `--jar <caminho>` ou a variável `ASSINADOR_JAR`.
+
+## Como executar
+
+```bash
 cd assinatura
+
+# Modo servidor (padrão): inicia o assinador.jar em background
 ./assinatura start
 
-# 2. Assinar (o CLI decide automaticamente entre HTTP ou Local)
+# Assinar — por padrão usa HTTP; faz fallback automático para subprocesso local
 ./assinatura sign --input entrada.json --output assinatura.json
 
-# 3. Validar assinatura
+# Forçar modo local (subprocesso java -jar), sem servidor
+./assinatura sign --input entrada.json --output assinatura.json --local
+
+# Validar assinatura
 ./assinatura validate --signature assinatura.json
 
-# 4. Parar servidor
+# Parar servidor
 ./assinatura stop
-
-# Para testar o CLI assinatura
-go test -v ./...
-
-# Para executar o stub do simulador
-cd ../simulador
-go run .
-
-# Para testar o assinador Java
-cd ../assinador
-mvn test
 ```
+
+A saída é estruturada e legível (✔/✖) e o código de saída reflete o resultado
+(sucesso, assinatura inválida ou erro de parâmetro). A validação de parâmetros é
+responsabilidade do `assinador.jar` (autoridade única) — ver
+[ADR 0001](docs/adr/0001-contrato-cli-jar.md). Use `--help` em qualquer comando
+para ver exemplos.
+
+## Como executar os testes
+
+```bash
+# CLI e pacotes Go (use -short para pular os testes de integração com o JAR)
+cd assinatura && go test ./...
+
+# Componente Java (assinador.jar)
+cd ../assinador && mvn test
+```
+
+Os testes de integração (`assinatura/cmd/integration_test.go`) exercitam o
+contrato real CLI ↔ `assinador.jar` por subprocesso e por HTTP; são
+automaticamente ignorados quando o JAR ou o `java` não estão disponíveis.
+
+## Como contribuir
+Trabalhe em branches curtas, abra PRs pequenos ligados a issues que referenciam
+as histórias de usuário, e garanta `go test ./...` e `mvn test` verdes antes do
+merge. Decisões não óbvias devem virar um ADR curto em `docs/adr/`.
+
 Goiânia, 2026

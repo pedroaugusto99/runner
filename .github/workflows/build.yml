@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   test:
@@ -25,10 +25,33 @@ jobs:
             assinatura/go.sum
             simulador/go.sum
 
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Empacotar e testar assinador.jar
+        run: mvn -B -ntp package
+        working-directory: assinador
+
+      - name: Verificar formatação (gofmt)
+        shell: bash
+        run: |
+          fmt=$(gofmt -l assinatura simulador)
+          if [ -n "$fmt" ]; then
+            echo "Arquivos Go não formatados (rode 'gofmt -w'):"
+            echo "$fmt"
+            exit 1
+          fi
+
       - name: Verificar assinatura
         run: go vet ./...
         working-directory: assinatura
 
+      # Com o assinador.jar empacotado acima e o JDK disponível, os testes de
+      # integração (subprocess real e HTTP real) são executados em cada SO.
       - name: Testar assinatura
         run: go test ./...
         working-directory: assinatura

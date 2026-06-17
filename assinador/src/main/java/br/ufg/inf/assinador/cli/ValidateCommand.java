@@ -1,45 +1,53 @@
 package br.ufg.inf.assinador.cli;
 
+import br.ufg.inf.assinador.dto.OperationError;
+import br.ufg.inf.assinador.dto.OperationResult;
+import br.ufg.inf.assinador.exception.ParameterValidationException;
 import br.ufg.inf.assinador.service.SignatureService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Component
-@Command(name = "validate", description = "Simula a validação de um pacote de assinatura FHIR.")
+@Command(name = "validate",
+        description = "Simula a validação de um pacote de assinatura FHIR.",
+        mixinStandardHelpOptions = true)
 public class ValidateCommand implements Callable<Integer> {
 
-    private final SignatureService signatureService;
+    private static final Logger log = LoggerFactory.getLogger(ValidateCommand.class);
 
-    public ValidateCommand(SignatureService signatureService) {
+    private final SignatureService signatureService;
+    private final OperationResultPrinter printer;
+
+    public ValidateCommand(SignatureService signatureService, OperationResultPrinter printer) {
         this.signatureService = signatureService;
+        this.printer = printer;
     }
 
-    @Option(names = {"-s", "--signature"}, description = "Caminho para o ficheiro de assinatura (.json)", required = true)
+    @Option(names = {"-s", "--signature"}, description = "Caminho para o ficheiro de assinatura (.json)")
     private String signatureFile;
 
     @Override
-    public Integer call() {
+    public Integer call() throws IOException {
+        log.debug("Executando comando validate (signature={})", signatureFile);
         try {
-            System.out.println("A analisar o ficheiro de assinatura...");
-
-            boolean isValid = signatureService.validate(signatureFile);
-
-            if (isValid) {
-                System.out.println("RESULTADO: [VÁLIDA] A assinatura foi verificada com sucesso.");
-                return 0;
-            } else {
-                System.out.println("RESULTADO: [INVÁLIDA] A assinatura não confere ou o formato é incorreto.");
-                return 1;
-            }
-
-        } catch (IllegalArgumentException e) {
-            System.err.println("ERRO DE VALIDAÇÃO: " + e.getMessage());
+            OperationResult result = signatureService.validate(signatureFile);
+            printer.print(result);
+            return Boolean.TRUE.equals(result.valid()) ? 0 : 1;
+        } catch (ParameterValidationException e) {
+            log.info("Parâmetros de validate rejeitados: {}", e.getMessage());
+            printer.print(OperationResult.error("validate",
+                    new OperationError("VALIDATION_ERROR", e.getMessage(), e.getDetails())));
             return 2;
-        } catch (Exception e) {
-            System.err.println("ERRO INTERNO: Falha ao validar a assinatura - " + e.getMessage());
+        } catch (RuntimeException e) {
+            log.error("Erro inesperado ao validar a assinatura", e);
+            printer.print(OperationResult.error("validate",
+                    new OperationError("INTERNAL_ERROR", e.getMessage(), null)));
             return 3;
         }
     }

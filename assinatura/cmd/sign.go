@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
 
 	"github.com/pedroaugusto99/runner/assinatura/internal/assinador"
+	"github.com/pedroaugusto99/runner/assinatura/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -24,8 +24,8 @@ func newSignCommand(cfg *cliConfig) *cobra.Command {
 		Short:   "Cria uma assinatura digital simulada usando o assinador.jar",
 		Long: `Cria uma assinatura digital simulada a partir de um arquivo de entrada.
 
-Por padrão, o CLI tentará comunicar com o servidor em background via HTTP para menor latência. 
-Se o servidor não estiver ativo, ou se a flag --local for utilizada, o sistema faz fallback automático 
+Por padrão, o CLI tentará comunicar com o servidor em background via HTTP para menor latência.
+Se o servidor não estiver ativo, ou se a flag --local for utilizada, o sistema faz fallback automático
 e invoca o assinador.jar como um subprocesso tradicional:
   java -jar assinador.jar sign --input <arquivo> --output <arquivo>
 
@@ -34,28 +34,22 @@ Exemplos:
   assinatura sign --input bundle.json --output assinatura.json --local`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if !local && isServerUp(port) {
+				slog.Info("Servidor detetado. Iniciando requisição REST POST /sign...")
 
-			if !local {
-				slog.Debug("Verificando se o servidor está ativo para invocação HTTP", "porta", port)
-
-				if isServerUp(port) {
-					slog.Info("Servidor detetado. Iniciando requisição REST POST /sign...")
-
-					httpErr := signViaHTTP(cmd, port, inputPath, outputPath)
-
-					if httpErr == nil {
-						return nil
+				exitCode, httpErr := signViaHTTP(cmd, port, inputPath, outputPath)
+				if httpErr == nil {
+					if exitCode != 0 {
+						return exitError{Code: exitCode, Silent: true}
 					}
-
-					slog.Warn("Falha na comunicação HTTP com o servidor, prosseguindo para fallback", "erro", httpErr)
-				} else {
-					slog.Info("Servidor inativo. Iniciando fallback automático para Modo Local (subprocesso).")
+					return nil
 				}
-			} else {
+				slog.Warn("Falha na comunicação HTTP com o servidor, prosseguindo para fallback", "erro", httpErr)
+			} else if local {
 				slog.Info("Modo Local (CLI) forçado explicitamente via flag --local.")
+			} else {
+				slog.Info("Servidor inativo. Iniciando fallback automático para Modo Local (subprocesso).")
 			}
-
-			cmd.Println("⚙️ A processar operação no Modo Local (CLI JVM)...")
 
 			return runAssinador(cmd, assinador.LocalRequest{
 				Operation:  assinador.OperationSign,
@@ -73,13 +67,13 @@ Exemplos:
 	cmd.Flags().BoolVar(&local, "local", false, "Força a invocação do assinador.jar diretamente via subprocesso")
 	cmd.Flags().StringVarP(&port, "port", "p", "8080", "Porta do servidor HTTP a ser consultada")
 
-	_ = cmd.MarkFlagRequired("input")
-	_ = cmd.MarkFlagRequired("output")
+	// A obrigatoriedade dos parâmetros é validada pelo assinador.jar (autoridade
+	// única), não pelo CLI — ver docs/adr/0001-contrato-cli-jar.md.
 
 	return cmd
 }
 
-func signViaHTTP(cmd *cobra.Command, port, inputPath, outputPath string) error {
+func signViaHTTP(cmd *cobra.Command, port, inputPath, outputPath string) (int, error) {
 	payload := map[string]string{
 		"inputPath":  inputPath,
 		"outputPath": outputPath,
@@ -87,26 +81,21 @@ func signViaHTTP(cmd *cobra.Command, port, inputPath, outputPath string) error {
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("falha ao preparar payload JSON: %w", err)
+		return 0, fmt.Errorf("falha ao preparar payload JSON: %w", err)
 	}
 
 	url := fmt.Sprintf("http://localhost:%s/api/v1/sign", port)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := signerHTTPClient.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode == http.StatusOK {
-		slog.Info("Assinatura concluída via HTTP")
-		cmd.Println("✅ Assinatura concluída com sucesso via Modo Servidor (HTTP)!")
-		cmd.Printf("Resposta do Servidor: %s\n", string(body))
-		return nil
+	res, ok := output.Render(cmd.OutOrStdout(), body)
+	if !ok {
+		return 0, fmt.Errorf("resposta HTTP não reconhecida (status %d)", resp.StatusCode)
 	}
-
-	slog.Warn("Servidor retornou erro HTTP", "status", resp.StatusCode)
-	cmd.PrintErrf("⚠️ O Servidor HTTP processou o pedido mas retornou um erro (%d): %s\n", resp.StatusCode, string(body))
-	return fmt.Errorf("falha na validação de negócio via HTTP: status %d", resp.StatusCode)
+	return res.ExitCode(), nil
 }

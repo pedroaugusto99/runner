@@ -1,0 +1,21 @@
+# Normaliza fins de linha: LF no repositório, conversão automática no checkout.
+* text=auto eol=lf
+
+# Arquivos que devem manter LF sempre.
+*.go    text eol=lf
+*.java  text eol=lf
+*.xml   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.sh    text eol=lf
+
+# Scripts/arquivos Windows mantêm CRLF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Binários: sem normalização.
+*.jar   binary
+*.pem   binary
+*.sig   binary
