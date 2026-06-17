@@ -77,17 +77,8 @@ func (r LocalRequest) args(jarPath string) ([]string, error) {
 
 	switch r.Operation {
 	case OperationSign:
-		if r.InputPath == "" {
-			return nil, fmt.Errorf("informe o arquivo de entrada com --input")
-		}
-		if r.OutputPath == "" {
-			return nil, fmt.Errorf("informe o arquivo de saída com --output")
-		}
 		return append(base, "sign", "--input", r.InputPath, "--output", r.OutputPath), nil
 	case OperationValidate:
-		if r.SignaturePath == "" {
-			return nil, fmt.Errorf("informe o arquivo de assinatura com --signature")
-		}
 		return append(base, "validate", "--signature", r.SignaturePath), nil
 	default:
 		return nil, fmt.Errorf("operação não suportada: %s", r.Operation)

@@ -59,11 +59,14 @@ Exemplos:
 func Execute(version, commit string) {
 	cmd := newRootCommand(version, commit, os.Stdout, os.Stderr)
 	if err := cmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
 		var exitErr exitError
 		if errors.As(err, &exitErr) {
+			if !exitErr.Silent && exitErr.Message != "" {
+				fmt.Fprintln(os.Stderr, exitErr.Message)
+			}
 			os.Exit(exitErr.Code)
 		}
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(exitUsage)
 	}
 }
@@ -71,6 +74,7 @@ func Execute(version, commit string) {
 type exitError struct {
 	Message string
 	Code    int
+	Silent bool
 }
 
 func (e exitError) Error() string {
