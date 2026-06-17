@@ -26,10 +26,9 @@ O projeto evoluiu da Fase de Fundação para uma entrega funcional robusta. O Si
 - [x] [US-01.8 — Interromper execução do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-018--interromper-execu%C3%A7%C3%A3o-do-assinadorjar)
 - [x] [US-01.9 — Agendar interrupção do assinador.jar por inatividade](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-019--agendar-interrup%C3%A7%C3%A3o-do-assinadorjar-por-inatividade)
 - [x] [US-02.4 — Endpoints HTTP do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-024--endpoints-http-do-assinadorjar)
-
+- [ ] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11) - **Em andamento**
 
 ### O que falta fazer (Próximos Passos)
-- [x] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11)
 - [ ] **Contrato CLI/JAR**: Alinhar comandos, JSON de saída, códigos de erro e nomenclatura `verify`/`validate`.
 - [ ] **JDK e simulador**: Adicionar download automático do JDK e ciclo de vida do `simulador.jar`.
 
