@@ -6,21 +6,36 @@ import (
 	"os"
 
 	"github.com/pedroaugusto99/runner/assinatura/internal/assinador"
+	"github.com/pedroaugusto99/runner/assinatura/internal/output"
 	"github.com/spf13/cobra"
 )
 
-func runAssinador(cmd *cobra.Command, req assinador.LocalRequest) error {
-	os.Setenv("SPRING_MAIN_WEB_APPLICATION_TYPE", "none")
+var jvmQuietEnv = map[string]string{
+	"SPRING_MAIN_WEB_APPLICATION_TYPE": "none",
+	"SPRING_MAIN_BANNER_MODE":          "off",
+	"LOGGING_LEVEL_ROOT":               "off",
+}
 
-	defer os.Unsetenv("SPRING_MAIN_WEB_APPLICATION_TYPE")
+func runAssinador(cmd *cobra.Command, req assinador.LocalRequest) error {
+	for key, value := range jvmQuietEnv {
+		old, had := os.LookupEnv(key)
+		os.Setenv(key, value)
+		defer func(k, v string, restore bool) {
+			if restore {
+				os.Setenv(k, v)
+			} else {
+				os.Unsetenv(k)
+			}
+		}(key, old, had)
+	}
 
 	result, err := assinador.RunLocal(cmd.Context(), req)
+
+	rendered := false
 	if result.Stdout != "" {
-		fmt.Fprint(cmd.OutOrStdout(), result.Stdout)
+		_, rendered = output.Render(cmd.OutOrStdout(), []byte(result.Stdout))
 	}
-	if result.Stderr != "" {
-		fmt.Fprint(cmd.ErrOrStderr(), result.Stderr)
-	}
+
 	if err == nil {
 		return nil
 	}
@@ -31,8 +46,13 @@ func runAssinador(cmd *cobra.Command, req assinador.LocalRequest) error {
 		if code == 0 {
 			code = exitUsage
 		}
-		return exitError{Message: usageErr.Message, Code: code}
+		if rendered {
+			return exitError{Code: code, Silent: true}
+		}
+		fmt.Fprintf(cmd.ErrOrStderr(), "✖ %s\n", usageErr.Message)
+		return exitError{Code: code, Silent: true}
 	}
 
-	return exitError{Message: fmt.Sprintf("falha inesperada ao executar o assinador.jar: %v", err), Code: exitUnexpected}
+	fmt.Fprintf(cmd.ErrOrStderr(), "✖ falha inesperada ao executar o assinador.jar: %v\n", err)
+	return exitError{Code: exitUnexpected, Silent: true}
 }
