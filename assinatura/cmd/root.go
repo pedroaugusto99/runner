@@ -74,7 +74,7 @@ func Execute(version, commit string) {
 type exitError struct {
 	Message string
 	Code    int
-	Silent bool
+	Silent  bool
 }
 
 func (e exitError) Error() string {
