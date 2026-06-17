@@ -64,6 +64,8 @@ Exemplos:
 	cmd.Flags().BoolVar(&local, "local", false, "Força a invocação do assinador.jar diretamente via subprocesso")
 	cmd.Flags().StringVarP(&port, "port", "p", "8080", "Porta do servidor HTTP a ser consultada")
 
+	// A obrigatoriedade do parâmetro é validada pelo assinador.jar (autoridade
+	// única), não pelo CLI — ver docs/adr/0001-contrato-cli-jar.md.
 
 	return cmd
 }
