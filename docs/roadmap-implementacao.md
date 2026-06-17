@@ -41,7 +41,7 @@ A recomendação é trabalhar em ondas curtas, cada uma com um objetivo verific�
 Eliminar ambiguidade antes de implementar os componentes principais.
 
 **Entradas**
-- [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md)
+- [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/especificacao.md)
 - `docs/rastreabilidade.md`
 - `docs/integracao-assinador.md`
 
@@ -232,4 +232,4 @@ Use a lista abaixo para controlar o progresso do roadmap:
 
 ## Resultado esperado
 
-Ao seguir este roadmap, o projeto evolui de um repositório com fundação pronta para um sistema funcional, testável e distribuível, mantendo coerência com a [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md) e com os artefatos de documentação já adicionados ao repositório.
+Ao seguir este roadmap, o projeto evolui de um repositório com fundação pronta para um sistema funcional, testável e distribuível, mantendo coerência com a [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/especificacao.md) e com os artefatos de documentação já adicionados ao repositório.

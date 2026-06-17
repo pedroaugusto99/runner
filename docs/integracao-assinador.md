@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Este documento define o contrato esperado entre o CLI `assinatura` e o componente Java `assinador.jar`, conforme descrito na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md). O foco é estabelecer uma base estável para implementação posterior, sem depender ainda da lógica final do assinador.
+Este documento define o contrato esperado entre o CLI `assinatura` e o componente Java `assinador.jar`, conforme descrito na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/especificacao.md). O foco é estabelecer uma base estável para implementação posterior, sem depender ainda da lógica final do assinador.
 
 ## Princípios
 
@@ -52,7 +52,7 @@ O `assinador.jar` permanece em execução localmente e recebe requisições HTTP
 
 ## Contrato lógico de entrada
 
-Os nomes de campos abaixo representam o contrato de integração entre componentes. A lista exata de parâmetros de negócio deve ser refinada a partir das referências FHIR citadas na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/main/especificacao.md).
+Os nomes de campos abaixo representam o contrato de integração entre componentes. A lista exata de parâmetros de negócio deve ser refinada a partir das referências FHIR citadas na [especificacao upstream fixada](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/especificacao.md).
 
 ### Operação `sign`
 
