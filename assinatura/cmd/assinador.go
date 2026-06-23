@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/pedroaugusto99/runner/assinatura/internal/assinador"
 	"github.com/pedroaugusto99/runner/assinatura/internal/output"
@@ -17,6 +18,13 @@ var jvmQuietEnv = map[string]string{
 }
 
 func runAssinador(cmd *cobra.Command, req assinador.LocalRequest) error {
+	if os.Getenv("SOFTHSM2_CONF") == "" {
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			configPath := filepath.Join(homeDir, ".config", "softhsm2", "softhsm2.conf")
+			os.Setenv("SOFTHSM2_CONF", configPath)
+		}
+	}
+
 	for key, value := range jvmQuietEnv {
 		old, had := os.LookupEnv(key)
 		os.Setenv(key, value)

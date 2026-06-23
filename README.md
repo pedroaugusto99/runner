@@ -26,7 +26,7 @@ O projeto evoluiu da Fase de Fundação para uma entrega funcional robusta. O Si
 - [x] [US-01.8 — Interromper execução do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-018--interromper-execu%C3%A7%C3%A3o-do-assinadorjar)
 - [x] [US-01.9 — Agendar interrupção do assinador.jar por inatividade](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-019--agendar-interrup%C3%A7%C3%A3o-do-assinadorjar-por-inatividade)
 - [x] [US-02.4 — Endpoints HTTP do assinador.jar](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-024--endpoints-http-do-assinadorjar)
-- [ ] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11) - **Em andamento**
+- [x] [US-02.5 — Integração com dispositivo criptográfico via PKCS#11](https://github.com/kyriosdata/runner/blob/802d241630ab3eac231834bc6c8afdd948c56856/docs/plano-revisitado-v2.md#us-025--integra%C3%A7%C3%A3o-com-dispositivo-criptogr%C3%A1fico-via-pkcs11)
 
 ### O que falta fazer (Próximos Passos)
 - [x] **Validação de parâmetros (US-02.2/02.3)**: validação rigorosa no `assinador.jar` (autoridade única), com erros estruturados (`campo`/`motivo`) e resultado determinístico de validação.
@@ -50,8 +50,15 @@ cd assinador
 mvn package            # gera assinador/target/assinador.jar
 
 # 2. Compilar o CLI de assinatura
+
+# Selecione o comando de acordo com o seu sistema operacional:
+# Linux / macOS
 cd ../assinatura
 go build -o assinatura .
+
+# Windows (PowerShell)
+cd ..\assinatura
+go build -o assinatura.exe .
 ```
 
 O CLI localiza o `assinador.jar` automaticamente (procurando em
@@ -60,6 +67,7 @@ também aceita `--jar <caminho>` ou a variável `ASSINADOR_JAR`.
 
 ## Como executar
 
+* **Linux / macOS**
 ```bash
 cd assinatura
 
@@ -79,11 +87,97 @@ cd assinatura
 ./assinatura stop
 ```
 
+* **Windows (PowerShell)**
+```bash
+cd .\assinatura
+
+# Modo servidor (padrão): inicia o assinador.jar em background
+.\assinatura.exe start
+
+# Assinar — por padrão usa HTTP; faz fallback automático para subprocesso local
+.\assinatura.exe sign --input entrada.json --output assinatura.json
+
+# Forçar modo local (subprocesso java -jar), sem servidor
+.\assinatura.exe sign --input entrada.json --output assinatura.json --local
+
+# Validar assinatura
+.\assinatura.exe validate --signature assinatura.json
+
+# Parar servidor
+.\assinatura.exe stop
+```
+
 A saída é estruturada e legível (✔/✖) e o código de saída reflete o resultado
 (sucesso, assinatura inválida ou erro de parâmetro). A validação de parâmetros é
 responsabilidade do `assinador.jar` (autoridade única) — ver
 [ADR 0001](docs/adr/0001-contrato-cli-jar.md). Use `--help` em qualquer comando
 para ver exemplos.
+
+## Configuração do Ambiente Criptográfico (PKCS#11 / SoftHSM2)
+
+**1. Instalação das dependências nativas**
+<br>
+* **No Ubuntu/Linux**
+```bash
+# 
+sudo apt-get update
+sudo apt-get install softhsm2 openssl opensc -y
+```
+* **No macOS (via Homebrew)**
+```bash
+# 
+brew install softhsm openssl opensc
+```
+* **No Windows (via PowerShell como Administrador)**
+```bash
+# 
+choco install openssl opensc -y
+# Para o SoftHSM2 no Windows, baixe o binário buildado ou utilize o instalador msi oficial.
+```
+**2. Inicialização do Token e Carga de Chaves**
+<br>
+Execute os comandos abaixo no terminal correspondente para configurar o Slot criptográfico sob o label HubSaudeToken com o PIN padrão 123456.
+<br>
+* **No Linux / MacOS**
+```bash
+# Limpa tokens residuais
+rm -rf ~/.config/softhsm2/tokens/*
+
+# Inicializa o Token
+softhsm2-util --init-token --free --label "HubSaudeToken" --pin 123456 --so-pin 123456
+
+# Gera chaves e certificado X.509 autoassinado
+openssl req -x509 -newkey rsa:2048 -nodes -keyout privada.pem -out certificado.pem -days 365 -subj "/CN=HubSaude/O=UFG/C=BR"
+
+# Define o caminho da biblioteca dependendo do OS
+# Linux: /usr/lib/softhsm/libsofthsm2.so
+# macOS: /opt/homebrew/lib/softhsm/libsofthsm2.so
+export SOFTHSM_LIB="/usr/lib/softhsm/libsofthsm2.so"
+
+# Injeta os artefatos no slot do Token HSM
+pkcs11-tool --module $SOFTHSM_LIB --token-label "HubSaudeToken" -l --pin 123456 -w privada.pem --type privkey --label "AssinaturaKey" --id 01
+pkcs11-tool --module $SOFTHSM_LIB --token-label "HubSaudeToken" -l --pin 123456 -w certificado.pem --type cert --label "AssinaturaKey" --id 01
+
+rm privada.pem certificado.pem
+```
+
+* **No Windows (PowerShell)**
+```bash
+# Inicializa o Token (certifique-se de que o softhsm2-util está no PATH)
+softhsm2-util --init-token --free --label "HubSaudeToken" --pin 123456 --so-pin 123456
+
+# Gera chaves e certificado X.509
+openssl req -x509 -newkey rsa:2048 -nodes -keyout privada.pem -out certificado.pem -days 365 -subj "/CN=HubSaude/O=UFG/C=BR"
+
+# Altere o caminho abaixo para o diretório de instalação do seu SoftHSM2 no Windows
+$env:SOFTHSM_LIB="C:\Program Files\SoftHSM2\lib\softhsm2.dll"
+
+# Injeta os artefatos
+pkcs11-tool --module $env:SOFTHSM_LIB --token-label "HubSaudeToken" -l --pin 123456 -w privada.pem --type privkey --label "AssinaturaKey" --id 01
+pkcs11-tool --module $env:SOFTHSM_LIB --token-label "HubSaudeToken" -l --pin 123456 -w certificado.pem --type cert --label "AssinaturaKey" --id 01
+
+Remove-Item privada.pem, certificado.pem
+```
 
 ## Como executar os testes
 
@@ -93,6 +187,9 @@ cd assinatura && go test ./...
 
 # Componente Java (assinador.jar)
 cd ../assinador && mvn test
+
+# Componente Java (Testes de Integração)
+cd ../assinador && mvn verify
 ```
 
 Os testes de integração (`assinatura/cmd/integration_test.go`) exercitam o
