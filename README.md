@@ -33,6 +33,7 @@ O projeto evoluiu da Fase de Fundação para uma entrega funcional robusta. O Si
 - [x] **Saída do contrato CLI/JAR (US-01.4)**: envelope JSON em `stdout`, exibição legível no CLI e códigos de saída coerentes — ver [ADR 0001](docs/adr/0001-contrato-cli-jar.md).
 - [ ] **Nomenclatura `verify`/`validate`**: unificar o nome do comando (mantido `validate` por ora).
 - [ ] **JDK e simulador**: download automático do JDK e ciclo de vida do `simulador.jar`.
+- [ ] **Release Final do Trabalho**: realizar release final até dia 30/06.
 
 ## Estrutura do Repositório
 O projeto separa os componentes principais em diretórios próprios:
