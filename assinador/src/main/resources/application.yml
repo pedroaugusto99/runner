@@ -9,3 +9,13 @@ logging:
   level:
     root: INFO
     br.ufg.inf.assinador: DEBUG
+
+hubsaude:
+  crypto:
+    pkcs11:
+      pin: ${HSM_PIN:123456}
+      key-label: "AssinaturaKey"
+      paths:
+        windows: ${HSM_LIB_WIN:C:\\Program Files\\SoftHSM2\\lib\\softhsm2.dll}
+        mac: ${HSM_LIB_MAC:/usr/local/lib/softhsm/libsofthsm2.so}
+        linux: ${HSM_LIB_LINUX:/usr/lib/softhsm/libsofthsm2.so}
