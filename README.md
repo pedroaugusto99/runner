@@ -120,18 +120,15 @@ para ver exemplos.
 <br>
 * **No Ubuntu/Linux**
 ```bash
-# 
 sudo apt-get update
 sudo apt-get install softhsm2 openssl opensc -y
 ```
 * **No macOS (via Homebrew)**
 ```bash
-# 
 brew install softhsm openssl opensc
 ```
 * **No Windows (via PowerShell como Administrador)**
 ```bash
-# 
 choco install openssl opensc -y
 # Para o SoftHSM2 no Windows, baixe o binário buildado ou utilize o instalador msi oficial.
 ```
