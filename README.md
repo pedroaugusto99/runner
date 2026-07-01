@@ -31,7 +31,7 @@ O projeto evoluiu da Fase de Fundação para uma entrega funcional robusta. O Si
 ### O que falta fazer (Próximos Passos)
 - [x] **Validação de parâmetros (US-02.2/02.3)**: validação rigorosa no `assinador.jar` (autoridade única), com erros estruturados (`campo`/`motivo`) e resultado determinístico de validação.
 - [x] **Saída do contrato CLI/JAR (US-01.4)**: envelope JSON em `stdout`, exibição legível no CLI e códigos de saída coerentes — ver [ADR 0001](docs/adr/0001-contrato-cli-jar.md).
-- [ ] **Nomenclatura `verify`/`validate`**: unificar o nome do comando (mantido `validate` por ora).
+- [X] **Nomenclatura `verify`/`validate`**: unificar o nome do comando (mantido `validate` por ora).
 - [ ] **JDK e simulador**: download automático do JDK e ciclo de vida do `simulador.jar`.
 - [ ] **Release Final do Trabalho**: realizar release final até dia 30/06.
 
@@ -120,18 +120,15 @@ para ver exemplos.
 <br>
 * **No Ubuntu/Linux**
 ```bash
-# 
 sudo apt-get update
 sudo apt-get install softhsm2 openssl opensc -y
 ```
 * **No macOS (via Homebrew)**
 ```bash
-# 
 brew install softhsm openssl opensc
 ```
 * **No Windows (via PowerShell como Administrador)**
 ```bash
-# 
 choco install openssl opensc -y
 # Para o SoftHSM2 no Windows, baixe o binário buildado ou utilize o instalador msi oficial.
 ```
@@ -203,3 +200,5 @@ as histórias de usuário, e garanta `go test ./...` e `mvn test` verdes antes d
 merge. Decisões não óbvias devem virar um ADR curto em `docs/adr/`.
 
 Goiânia, 2026
+
+Trabalho dedicado a disciplina de Implentação e Integração de Software
